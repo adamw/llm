@@ -1,0 +1,21 @@
+
+
+Parameters:
+* context length: supported input size of the LLM (in tokens); GPT-2: from 1024
+* embedding size; GPT-2 -> 768-1600, GPT-3 -> 12288; same d_in and d_out
+* attention heads; GPT-2 -> 12-25
+
+* text -> tokens: BPE, tiktoken
+* tokens -> token embeddings (output dim = embedding size)
+* input embeddings = token embeddings + pos embeddings (embed a tensor: number from 1 to context length -> output dim)
+* data loader
+  * batched (+ shuffle, drop last) 
+  * basing on a data set (pairs of inputs and targets - shifted by one token, up to max length, by stride)
+  * outputs tensor: batch size x number of tokens (context length) x embedding size 
+* attention
+  * for each token, we compute the key, query & value from the embedding
+  * query ~= search query in a DB; key ~= DB key used for indexing, used to match the query; value ~= actual representation of the input item
+  * the model determines which keys are the most relevant to the query, and retrieves the corresponding values
+  * key * query = attention score; normalized (softmax, scaled by sqrt(dim)) -> attention weight; attention weight * value = context vector
+* add mask & dropout -> causal attention
+* use multiple heads, representing them as a single big matrix & multiplying accordingly
